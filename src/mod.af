@@ -1,8 +1,4 @@
 .needs <std>
-export int dot_env(int a, int b){
-	return a + b;
-};
-.needs <std>
 
 import File from "files";
 import { openFile } from "files" under fs;
