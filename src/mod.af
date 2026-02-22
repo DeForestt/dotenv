@@ -1,0 +1,135 @@
+.needs <std>
+export int dot_env(int a, int b){
+	return a + b;
+};
+.needs <std>
+
+import File from "files";
+import { openFile } from "files" under fs;
+import string from "String";
+import {print} from "String" under str; 
+import result from "Utils/result";
+import {accept, reject, resultWrapper} from "Utils/result" under res;
+import option from "Utils/option";
+import {Some, None, optionWrapper} from "Utils/option" under opt;
+import unordered_map from "Collections/unordered_map";
+import vector from "Collections/Vector";
+import {envVar} from "System" under sys;
+
+private fn getenvFile() -> File? {
+	match fs.openFile(".env") {
+		Ok(file) => return opt.Some(file),
+		Err() => return opt.None::<File>(),
+	};
+};
+
+private fn getenvText() -> string? {
+	match getenvFile() {
+		Some(file) => {
+			match file.readToEnd() {
+				Ok(text) => {
+					file.close();
+					delete file;
+					return opt.Some(text);
+				},
+				Err(_) => {
+					file.close();
+					delete file;
+					return opt.None::<string>();
+				},
+			};
+		},
+		None() => return opt.None::<string>(),
+	};
+};
+
+private fn sanitizeLine(const string line) -> string {
+	if line.len() == 0 {
+		return line;
+	};
+	const int endIndex = line.len() - 1;
+	const char lastChar = line.at(endIndex);
+	if lastChar == '\r' {
+		return line.subString(0, endIndex);
+	};
+	return line;
+};
+
+private fn parseEnvText() -> unordered_map::<string> {
+	const let vars = new unordered_map::<string>();
+	match getenvText() {
+		Some(contents) => {
+			const vector::<string> lines = contents.split('\n');
+			foreach line in lines {
+			};
+
+			for mutable int i = 0; i < lines.count(); i = i + 1 {
+				match lines.get(i) {
+					Some(rawLine) => {
+						const string line = sanitizeLine(rawLine);
+						if line.len() == 0 {
+							continue;
+						};
+						if line.at(0) == '#' {
+							continue;
+						};
+						const vector::<string> parts = line.split('=');
+						if parts.count() < 2 {
+							continue;
+						};
+						const option::<string> keyPart = parts.get(0);
+						if keyPart.isNone() {
+							continue;
+						};
+						const string key = keyPart.unwrap().trim(' ');
+						if key.len() == 0 {
+							continue;
+						};
+						const option::<string> valuePart = parts.get(1);
+						if valuePart.isNone() {
+							continue;
+						};
+						const string value = valuePart.unwrap().trim(' ').trim('"');
+						vars.set(key.cstr(), value.copy());
+					},
+					None() => continue,
+				};
+			};
+		},
+		None() => {},
+	};
+	return vars;
+};
+
+mutable unordered_map::<string> envVarMap = NULL;
+
+private fn getEnvMap() -> unordered_map::<string> {
+    if envVarMap == NULL {
+        envVarMap = parseEnvText();
+    };
+
+    return envVarMap;
+};
+
+public fn __dotenv_getEnvVar(adr key) -> adr {
+    // first we try returning from sys...
+    let external = sys.envVar(key);
+    if external != NULL
+        return external;
+    
+    let envs = getEnvMap();
+    match envs.get(key) {
+        Some(val) => return val.cstr(),
+        None => return NULL,
+    };
+};
+
+export fn getEnvVar(string key, ?adr default) -> string? {
+    let final = __dotenv_getEnvVar(key.cstr());
+    if final == NULL {
+        if default.isSome() return default.unwrap();
+        return opt.None::<string>();
+    };
+    
+    return new string(final);
+};

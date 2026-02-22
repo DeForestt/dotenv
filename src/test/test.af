@@ -1,0 +1,8 @@
+.needs <std>
+.needs <test>
+
+import {beforeAll, beforeEach, afterEach, afterAll, describe, it, itSkip, fix, getFixture, assertEqual, assertTrue, summary} from "ATest" under test;
+
+fn main() -> int {
+    return 0;
+};
