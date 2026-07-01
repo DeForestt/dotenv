@@ -51,8 +51,8 @@ private fn sanitizeLine(const string line) -> string {
 	return line;
 };
 
-private fn parseEnvText() -> unordered_map::<string> {
-	const let vars = new unordered_map::<string>();
+private fn parseEnvText() -> unordered_map::<adr, string> {
+	const let vars = new unordered_map::<adr, string>();
 	match getenvText() {
 		Some(contents) => {
 			const vector::<string> lines = contents.split('\n');
@@ -97,9 +97,9 @@ private fn parseEnvText() -> unordered_map::<string> {
 	return vars;
 };
 
-mutable unordered_map::<string> envVarMap = NULL;
+mutable unordered_map::<adr, string> envVarMap = NULL;
 
-private fn getEnvMap() -> unordered_map::<string> {
+private fn getEnvMap() -> unordered_map::<adr, string> {
     if envVarMap == NULL {
         envVarMap = parseEnvText();
     };
