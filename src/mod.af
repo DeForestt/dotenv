@@ -19,7 +19,7 @@ private fn getenvFile() -> File? {
 	};
 };
 
-private fn getenvText() -> string? {
+private fn getenvText() -> string {
 	match getenvFile() {
 		Some(file) => {
 			match file.readToEnd() {
@@ -56,9 +56,6 @@ private fn parseEnvText() -> unordered_map::<adr, string> {
 	match getenvText() {
 		Some(contents) => {
 			const vector::<string> lines = contents.split('\n');
-			foreach line in lines {
-			};
-
 			for mutable int i = 0; i < lines.count(); i = i + 1 {
 				match lines.get(i) {
 					Some(rawLine) => {
